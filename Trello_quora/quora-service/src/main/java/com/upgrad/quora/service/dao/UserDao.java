@@ -33,5 +33,9 @@ public class UserDao implements Serializable {
             return null;
         }
     }
-    
+
+    public void updateUser(final UserEntity updatedUserEntity) {
+        entityManager.merge(updatedUserEntity);
+    }
+
 }
