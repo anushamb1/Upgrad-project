@@ -1,4 +1,5 @@
 package com.upgrad.quora.service.dao;
+import com.upgrad.quora.service.entity.UserAuthTokenEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import org.springframework.stereotype.Repository;
 
@@ -39,6 +40,26 @@ public class UserDao implements Serializable {
 
     public void updateUser(final UserEntity updatedUserEntity) {
         entityManager.merge(updatedUserEntity);
+    }
+
+//    get user by userid
+    public UserEntity getUser(final String userUuid){
+        try {
+            return entityManager.createNamedQuery("userByUuid", UserEntity.class)
+                    .setParameter("uuid", userUuid)
+                    .getSingleResult();
+        }catch (NoResultException nre){
+            return null;
+        }
+    }
+    public UserAuthTokenEntity getUserAuthToken(final String authorizationToken) {
+        try {
+            return entityManager.createNamedQuery("userAuthTokenByAccessToken", UserAuthTokenEntity.class)
+                    .setParameter("accessToken", authorizationToken)
+                    .getSingleResult();
+        } catch (NoResultException nre) {
+            return null;
+        }
     }
 
 }
