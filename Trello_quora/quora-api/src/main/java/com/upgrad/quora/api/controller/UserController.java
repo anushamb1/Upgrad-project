@@ -1,14 +1,20 @@
 package com.upgrad.quora.api.controller;
 
+import com.upgrad.quora.api.model.SigninResponse;
 import com.upgrad.quora.api.model.SignupUserRequest;
 import com.upgrad.quora.api.model.SignupUserResponse;
+import com.upgrad.quora.service.business.PasswordCryptographyProvider;
 import com.upgrad.quora.service.business.UserBusinessService;
+import com.upgrad.quora.service.entity.UserAuthTokenEntity;
 import com.upgrad.quora.service.entity.UserEntity;
+import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.SignUpRestrictedException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,7 +28,15 @@ public class UserController {
     @Autowired
     private UserBusinessService userBusinessService;
 
-    @RequestMapping(method = RequestMethod.POST, path = "/signup", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @Autowired
+    private PasswordCryptographyProvider passwordCryptographyProvider;
+
+
+    @RequestMapping(
+            method = RequestMethod.POST,
+            path = "/signup",
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<SignupUserResponse> signup(final SignupUserRequest signupUserRequest) throws SignUpRestrictedException {
 
         //create a new UserEntity Object
@@ -55,6 +69,36 @@ public class UserController {
 
     }
 
+    @RequestMapping(
+            method = RequestMethod.POST,
+            path = "/signin",
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<SigninResponse> signin(
+            @RequestHeader("authorization") final String authorization)
+            throws AuthenticationFailedException {
 
+        //split and extract authorization base 64 code string from "authorization" field
+        String[] base64EncodedString = authorization.split("Basic ");
 
+        //decode base64 string from a "authorization" field
+        byte[] decodedArray = passwordCryptographyProvider.getBase64DecodedStringAsBytes(base64EncodedString[1]);
+
+        String decodedString = new String(decodedArray);
+
+        //decoded string contain user name and password separated by ":"
+        String[] decodedUserNamePassword = decodedString.split(":");
+
+        //call authenticationService service to generate user Auth Token for any further communication
+        UserAuthTokenEntity userAuthToken = userBusinessService.authenticateByUserNamePassword(decodedUserNamePassword[0], decodedUserNamePassword[1]);
+
+        //get userEntity from Auth Token
+        UserEntity user = userAuthToken.getUser();
+
+        //send response with user uuid and access token in HttpHeader
+        SigninResponse signinResponse = new SigninResponse().id(user.getUuid()).message("SIGNED IN SUCCESSFULLY");
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("access_token", userAuthToken.getAccessToken());
+
+        return new ResponseEntity<SigninResponse>(signinResponse, headers, HttpStatus.OK);
+    }
 }
