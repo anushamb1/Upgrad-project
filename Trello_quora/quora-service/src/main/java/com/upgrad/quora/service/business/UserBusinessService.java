@@ -5,6 +5,7 @@ import com.upgrad.quora.service.dao.UserDao;
 import com.upgrad.quora.service.entity.UserAuthTokenEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
+import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.SignUpRestrictedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -82,6 +83,20 @@ public class UserBusinessService {
         } else {
             throw new AuthenticationFailedException("ATH-002", "Password failed");
         }
+    }
+
+    public UserAuthTokenEntity authenticateByAccessToken(final String accessToken) throws AuthorizationFailedException {
+        UserAuthTokenEntity userAuthTokenEntity = userAuthDao.getUserAuthTokenEntityByAccessToken(accessToken);
+        if( userAuthTokenEntity != null ) {
+            return userAuthTokenEntity;
+        } else {
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserAuthTokenEntity updateUserAuthToken(final UserAuthTokenEntity userAuthTokenEntity) {
+        return userAuthDao.updateUserAuthToken(userAuthTokenEntity);
     }
 
 }
