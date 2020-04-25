@@ -19,9 +19,7 @@ public class CommonController {
     private UserBusinessService userBusinessService;
 
     @RequestMapping(method = RequestMethod.GET, path = "/userprofile/{userId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<UserDetailsResponse> getUserProfile(@RequestHeader("authorization") final String authorization,
-                                                              @PathVariable("userId") final String userId)
-            throws AuthorizationFailedException, UserNotFoundException {
+    public ResponseEntity<UserDetailsResponse> getUserProfile(@RequestHeader("authorization") final String authorization, @PathVariable("userId") final String userId) throws AuthorizationFailedException, UserNotFoundException {
 
         String[] bearerToken = authorization.split("Bearer ");
         if (bearerToken.length < 2) {
