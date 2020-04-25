@@ -7,6 +7,7 @@ import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.SignUpRestrictedException;
+import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -85,6 +86,7 @@ public class UserBusinessService {
         }
     }
 
+
     public UserAuthTokenEntity authenticateByAccessToken(final String accessToken) throws AuthorizationFailedException {
         UserAuthTokenEntity userAuthTokenEntity = userAuthDao.getUserAuthTokenEntityByAccessToken(accessToken);
         if( userAuthTokenEntity != null ) {
@@ -99,4 +101,24 @@ public class UserBusinessService {
         return userAuthDao.updateUserAuthToken(userAuthTokenEntity);
     }
 
+
+    public UserEntity getUser(final String userUuid, final String authorizationToken)
+            throws AuthorizationFailedException, UserNotFoundException {
+        UserAuthTokenEntity userAuthEntity = userDao.getUserAuthToken(authorizationToken);
+        if (userAuthEntity == null) {
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+        } else if ((userAuthEntity.getLogoutAt() != null && userAuthEntity.getLogoutAt().isBefore(ZonedDateTime.now()))
+                || userAuthEntity.getExpiresAt().isBefore(ZonedDateTime.now())) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get user details");
+        } else {
+            UserEntity userEntity = userDao.getUser(userUuid);
+            if (userEntity == null) {
+                throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
+            }
+            return userEntity;
+        }
+    }
+
 }
+
+
