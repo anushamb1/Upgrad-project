@@ -30,21 +30,22 @@ public class RestExceptionHandler {
 
 
     @ExceptionHandler(AuthorizationFailedException.class)
-    public ResponseEntity<ErrorResponse> authorizationFailedException(AuthorizationFailedException exe, WebRequest request){
-        if( exe.getCode().compareTo("SGR-001") == 0 ) {
+    public ResponseEntity<ErrorResponse> authorizationFailedException(AuthorizationFailedException exe, WebRequest request) {
+        if (exe.getCode().compareTo("SGR-001") == 0) {
             return new ResponseEntity<ErrorResponse>(
-                    new ErrorResponse().code(exe.getCode()).message(exe.getErrorMessage()),HttpStatus.UNAUTHORIZED
+                    new ErrorResponse().code(exe.getCode()).message(exe.getErrorMessage()), HttpStatus.UNAUTHORIZED
             );
         } else {
             return new ResponseEntity<ErrorResponse>(
-                    new ErrorResponse().code(exe.getCode()).message(exe.getErrorMessage()),HttpStatus.FORBIDDEN
+                    new ErrorResponse().code(exe.getCode()).message(exe.getErrorMessage()), HttpStatus.FORBIDDEN
             );
+        }}
+
+        @ExceptionHandler(UserNotFoundException.class)
+        public ResponseEntity<ErrorResponse> resourceNotFoundException (UserNotFoundException unf, WebRequest webRequest)
+        {
+            return new ResponseEntity<ErrorResponse>(
+                    new ErrorResponse().code(unf.getCode()).message(unf.getErrorMessage()), HttpStatus.NOT_FOUND);
         }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> resourceNotFoundException(UserNotFoundException unf, WebRequest webRequest) {
-        return new ResponseEntity<ErrorResponse>(
-                new ErrorResponse().code(unf.getCode()).message(unf.getErrorMessage()), HttpStatus.NOT_FOUND);
     }
-
-}
