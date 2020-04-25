@@ -13,16 +13,19 @@ public class UserAuthDao {
     @PersistenceContext
     private EntityManager entityManager;
 
+    //Create record in UserAuthToken table.
     public UserAuthTokenEntity createAuthToken(final UserAuthTokenEntity userAuthTokenEntity) {
         entityManager.persist(userAuthTokenEntity);
         return userAuthTokenEntity;
     }
 
+    //Update UserAuthToken record.
     public UserAuthTokenEntity updateUserAuthToken(final UserAuthTokenEntity userAuthTokenEntity) {
         entityManager.merge(userAuthTokenEntity);
         return userAuthTokenEntity;
     }
 
+    //Get UserAuthToken record using accesstoken.
     public UserAuthTokenEntity getUserAuthTokenEntityByAccessToken(final String accessToken) {
         try {
             return entityManager.createNamedQuery("userAuthTokenByAccessToken", UserAuthTokenEntity.class).setParameter("accessToken", accessToken).getSingleResult();
