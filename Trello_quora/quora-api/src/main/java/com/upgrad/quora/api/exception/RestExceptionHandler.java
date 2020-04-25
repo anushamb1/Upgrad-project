@@ -47,5 +47,6 @@ public class RestExceptionHandler {
             return new ResponseEntity<ErrorResponse>(
                     new ErrorResponse().code(unf.getCode()).message(unf.getErrorMessage()), HttpStatus.NOT_FOUND);
         }
+    }
 
     }
