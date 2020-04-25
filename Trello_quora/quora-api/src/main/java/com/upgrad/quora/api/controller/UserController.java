@@ -35,7 +35,9 @@ public class UserController {
     @Autowired
     private PasswordCryptographyProvider passwordCryptographyProvider;
 
-
+    /* EndPoint /user/signup take SignupUserRequest Object as Input and
+    convert SignupUserRequest object into UserEntity stores in User Table.
+    */
     @RequestMapping(
             method = RequestMethod.POST,
             path = "/signup",
@@ -63,7 +65,7 @@ public class UserController {
         // set Role to default nonadmin
         userEntity.setRole("nonadmin");
 
-        //Call signupBusinessService to create a new user Entity
+        //Call userBusinessService to create a new user Entity
         final UserEntity createdUserEntity = userBusinessService.signup(userEntity);
 
         //create response with create user uuid
@@ -73,6 +75,11 @@ public class UserController {
 
     }
 
+    /* EndPoint /user/signin takes string as input. Input string need to be in following format
+    "Basic <username:password(base64Encoded)>" method will split string and get decode username
+    and password check user details.If user details matches with User table data generate Token
+    for further communication.
+       */
     @RequestMapping(
             method = RequestMethod.POST,
             path = "/signin",
@@ -92,7 +99,7 @@ public class UserController {
         //decoded string contain user name and password separated by ":"
         String[] decodedUserNamePassword = decodedString.split(":");
 
-        //call authenticationService service to generate user Auth Token for any further communication
+        //call userBusinessService service to generate user Auth Token for any further communication
         UserAuthTokenEntity userAuthToken = userBusinessService.authenticateByUserNamePassword(decodedUserNamePassword[0], decodedUserNamePassword[1]);
 
         //get userEntity from Auth Token
@@ -106,6 +113,10 @@ public class UserController {
         return new ResponseEntity<SigninResponse>(signinResponse, headers, HttpStatus.OK);
     }
 
+    /*
+        EndPoint /user/signout takes string as Input, We have provide token which we receive after successful login.
+        Logic delete record from UserAuth table.
+    */
     @RequestMapping(
             method = RequestMethod.POST,
             path = "/signout",
@@ -116,7 +127,7 @@ public class UserController {
 
         UserAuthTokenEntity userAuthTokenEntity = null;
         try {
-            // Call authenticationService with access token came in authorization field.
+            // Call userBusinessService with access token came in authorization field.
             userAuthTokenEntity = userBusinessService.authenticateByAccessToken(authorization);
         } catch(Exception e){
             throw new AuthorizationFailedException("SGR-001","User is not Signed in");

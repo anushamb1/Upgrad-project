@@ -13,11 +13,13 @@ public class UserDao implements Serializable {
     @PersistenceContext
     private EntityManager entityManager;
 
+    //Create record in User table.
     public UserEntity createUser(UserEntity userEntity){
         entityManager.persist(userEntity);
         return userEntity;
     }
 
+    //Get user record using username.
     public UserEntity getUserByUserName(final String userName) {
         try {
             return entityManager.createNamedQuery("userByUserName", UserEntity.class).setParameter("userName", userName).getSingleResult();
@@ -26,6 +28,7 @@ public class UserDao implements Serializable {
         }
     }
 
+    //Get user record using email
     public UserEntity getUserByEmail(final String email) {
         try {
             return entityManager.createNamedQuery("userByEmail", UserEntity.class).setParameter("email", email).getSingleResult();
