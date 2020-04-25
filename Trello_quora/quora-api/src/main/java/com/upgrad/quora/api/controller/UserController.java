@@ -63,7 +63,7 @@ public class UserController {
         userEntity.setContactNumber(signupUserRequest.getContactNumber());
 
         // set Role to default nonadmin
-        userEntity.setRole("admin");
+        userEntity.setRole("nonadmin");
 
         //Call userBusinessService to create a new user Entity
         final UserEntity createdUserEntity = userBusinessService.signup(userEntity);
