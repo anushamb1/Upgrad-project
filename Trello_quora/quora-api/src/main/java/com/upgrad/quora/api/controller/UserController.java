@@ -1,6 +1,7 @@
 package com.upgrad.quora.api.controller;
 
 import com.upgrad.quora.api.model.SigninResponse;
+import com.upgrad.quora.api.model.SignoutResponse;
 import com.upgrad.quora.api.model.SignupUserRequest;
 import com.upgrad.quora.api.model.SignupUserResponse;
 import com.upgrad.quora.service.business.PasswordCryptographyProvider;
@@ -8,6 +9,8 @@ import com.upgrad.quora.service.business.UserBusinessService;
 import com.upgrad.quora.service.entity.UserAuthTokenEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
+import com.upgrad.quora.service.exception.AuthorizationFailedException;
+import com.upgrad.quora.service.exception.SignOutRestrictedException;
 import com.upgrad.quora.service.exception.SignUpRestrictedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @RestController
@@ -101,4 +105,38 @@ public class UserController {
 
         return new ResponseEntity<SigninResponse>(signinResponse, headers, HttpStatus.OK);
     }
+
+    @RequestMapping(
+            method = RequestMethod.POST,
+            path = "/signout",
+            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<SignoutResponse> signout(
+            @RequestHeader("authorization") final String authorization)
+            throws AuthorizationFailedException, SignOutRestrictedException {
+
+        UserAuthTokenEntity userAuthTokenEntity = null;
+        try {
+            // Call authenticationService with access token came in authorization field.
+            userAuthTokenEntity = userBusinessService.authenticateByAccessToken(authorization);
+        } catch(Exception e){
+            throw new AuthorizationFailedException("SGR-001","User is not Signed in");
+        }
+
+        // Token exist but user logged out already or token expired
+        if ( userAuthTokenEntity.getLogoutAt() != null ) {
+            throw new AuthorizationFailedException("SGR-001","User is not Signed in");
+        }
+
+        //Set logout time
+        userAuthTokenEntity.setLogoutAt(ZonedDateTime.now());
+
+        //update userAuthTokenEntity with updated logout time.
+        userBusinessService.updateUserAuthToken(userAuthTokenEntity);
+
+        //create response with signed out user uuid
+        SignoutResponse signoutResponse = new SignoutResponse().id(userAuthTokenEntity.getUser().getUuid()).message("SIGNED OUT SUCCESSFULLY");
+        HttpHeaders headers = new HttpHeaders();
+        return new ResponseEntity<SignoutResponse>(signoutResponse, headers, HttpStatus.OK);
+    }
+
 }
