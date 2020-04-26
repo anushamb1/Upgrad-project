@@ -23,7 +23,7 @@ public class CommonController {
 
         String[] bearerToken = authorization.split("Bearer ");
         if (bearerToken.length < 2) {
-            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+            throw new AuthorizationFailedException("USR-001", "User has not signed in");
         }
 
         UserEntity userEntity = userBusinessService.getUser(userId, bearerToken[1]);

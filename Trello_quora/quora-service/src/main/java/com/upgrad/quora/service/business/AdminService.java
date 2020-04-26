@@ -22,9 +22,14 @@ public class AdminService {
     @Transactional(propagation = Propagation.REQUIRED)
     public UserEntity deleteUser(final String userId, final String accessToken) throws AuthorizationFailedException, UserNotFoundException {
 
+        String[] bearerToken = accessToken.split("Bearer ");
+        if (bearerToken.length < 2) {
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+        }
 
+        //UserEntity userEntity = userBusinessService.getUser(userId, bearerToken[1]);
 
-        UserAuthTokenEntity userAuthEntity = this.userAuthDao.getUserAuthTokenEntityByAccessToken(accessToken);
+        UserAuthTokenEntity userAuthEntity = this.userAuthDao.getUserAuthTokenEntityByAccessToken(bearerToken[1]);
 
         if (userAuthEntity == null) {
             throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
