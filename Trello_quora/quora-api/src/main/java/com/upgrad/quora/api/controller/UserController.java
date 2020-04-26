@@ -35,9 +35,14 @@ public class UserController {
     @Autowired
     private PasswordCryptographyProvider passwordCryptographyProvider;
 
-    /* EndPoint /user/signup take SignupUserRequest Object as Input and
-    convert SignupUserRequest object into UserEntity stores in User Table.
-    */
+
+    /*
+     * This endpoint is used for User Signup
+     * input - SignupUserRequest which contains user details like username, email, firstname, lastname, email, phonenumber
+     *
+     *  output - Success - SignupUserResponse containing User UUID and status.
+     *           Failure - Failure Code  with message.
+     */
     @RequestMapping(
             method = RequestMethod.POST,
             path = "/signup",
@@ -75,11 +80,14 @@ public class UserController {
 
     }
 
-    /* EndPoint /user/signin takes string as input. Input string need to be in following format
-    "Basic <username:password(base64Encoded)>" method will split string and get decode username
-    and password check user details.If user details matches with User table data generate Token
-    for further communication.
-       */
+
+    /*
+     * This endpoint is used for User SignIn
+     * input - authorization field containing "Basic <username:password(base64Encoded)>"
+     *
+     *  output - Success - SigninResponse containing User UUID and Token.
+     *           Failure - Failure Code  with message.
+     */
     @RequestMapping(
             method = RequestMethod.POST,
             path = "/signin",
@@ -90,6 +98,10 @@ public class UserController {
 
         //split and extract authorization base 64 code string from "authorization" field
         String[] base64EncodedString = authorization.split("Basic ");
+
+        if (base64EncodedString.length < 2) {
+            throw new AuthenticationFailedException("SGR-001", "This username does not exist");
+        }
 
         //decode base64 string from a "authorization" field
         byte[] decodedArray = passwordCryptographyProvider.getBase64DecodedStringAsBytes(base64EncodedString[1]);
@@ -114,9 +126,12 @@ public class UserController {
     }
 
     /*
-        EndPoint /user/signout takes string as Input, We have provide token which we receive after successful login.
-        Logic delete record from UserAuth table.
-    */
+     * This endpoint is used to get all answers for an question
+     * input - authorization field containing auth token generated from user sign-in
+     *
+     *  output - Success - SignoutResponse containing User UUID.
+     *           Failure - Failure Code  with message.
+     */
     @RequestMapping(
             method = RequestMethod.POST,
             path = "/signout",
@@ -126,16 +141,20 @@ public class UserController {
             throws AuthorizationFailedException, SignOutRestrictedException {
 
         UserAuthTokenEntity userAuthTokenEntity = null;
+        String[] bearerToken = authorization.split("Bearer ");
+        if (bearerToken.length < 2) {
+            throw new AuthorizationFailedException("SGR-001", "User is not Signed in");
+        }
         try {
-            // Call userBusinessService with access token came in authorization field.
-            userAuthTokenEntity = userBusinessService.authenticateByAccessToken(authorization);
-        } catch(Exception e){
-            throw new AuthorizationFailedException("SGR-001","User is not Signed in");
+            // Call userBusinessService with access token came in authorization field and get UserAuthToken object
+            userAuthTokenEntity = userBusinessService.authenticateByAccessToken(bearerToken[1]);
+        } catch (Exception e) {
+            throw new AuthorizationFailedException("SGR-001", "User is not Signed in");
         }
 
         // Token exist but user logged out already or token expired
-        if ( userAuthTokenEntity.getLogoutAt() != null ) {
-            throw new AuthorizationFailedException("SGR-001","User is not Signed in");
+        if (userAuthTokenEntity.getLogoutAt() != null) {
+            throw new AuthorizationFailedException("SGR-001", "User is not Signed in");
         }
 
         //Set logout time

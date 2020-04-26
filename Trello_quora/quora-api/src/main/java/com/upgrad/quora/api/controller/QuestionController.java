@@ -51,13 +51,12 @@ public class QuestionController {
             @RequestHeader("authorization") final String authorization)
             throws AuthorizationFailedException, UnsupportedEncodingException {
 
-        // Call authenticationService with access_token field
-
-        UserAuthTokenEntity userAuthTokenEntity = bearerSplit(authorization);
+        // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
+        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
 
         // Token exist or token expired
-        if ( userAuthTokenEntity.getLogoutAt() != null ) {
-            throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to post a question");
+        if (userAuthTokenEntity.getLogoutAt() != null) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to post a question");
         }
 
         //Create question
@@ -70,7 +69,7 @@ public class QuestionController {
         questionEntity.setUuid(UUID.randomUUID().toString());
 
         //set user and time for new question
-		questionEntity.setUser(userAuthTokenEntity.getUser());
+        questionEntity.setUser(userAuthTokenEntity.getUser());
         questionEntity.setDate(ZonedDateTime.now());
 
         //call questionService to create new question
@@ -96,12 +95,12 @@ public class QuestionController {
             @RequestHeader("authorization") final String authorization)
             throws AuthorizationFailedException, UnsupportedEncodingException {
 
-        // Call authenticationService with access_token field.
-        UserAuthTokenEntity userAuthTokenEntity = bearerSplit(authorization);
+        // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
+        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
 
         // Token exist or token expired
-        if ( userAuthTokenEntity.getLogoutAt() != null ) {
-            throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions");
+        if (userAuthTokenEntity.getLogoutAt() != null) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get all questions");
         }
 
         //to get list of all the question for a user
@@ -110,7 +109,7 @@ public class QuestionController {
         List<QuestionDetailsResponse> questionDetailsResponseList = new ArrayList<>();
 
         //prepare response with list of questions
-        for(QuestionEntity questionEntity: questionEntityList) {
+        for (QuestionEntity questionEntity : questionEntityList) {
             QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse().id(questionEntity.getUuid()).content(questionEntity.getContent());
             questionDetailsResponseList.add(questionDetailsResponse);
 
@@ -136,32 +135,32 @@ public class QuestionController {
             @RequestHeader("authorization") final String authorization)
             throws AuthorizationFailedException, InvalidQuestionException, UnsupportedEncodingException {
 
-        // Call authenticationService with access_token field
-        UserAuthTokenEntity userAuthTokenEntity = bearerSplit(authorization);
+        // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
+        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
 
         // Token exist or token expired
-        if ( userAuthTokenEntity.getLogoutAt() != null ) {
-            throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to edit the question");
+        if (userAuthTokenEntity.getLogoutAt() != null) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to edit the question");
         }
 
         //get a question by uuid
         final QuestionEntity questionEntity = questionService.getQuestionByUuid(questionUuid);
 
         //if given uuid doesn't exist
-        if(questionEntity == null ) {
-            throw new InvalidQuestionException("QUES-001","Entered question uuid does not exist");
+        if (questionEntity == null) {
+            throw new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
         }
 
-        if(  questionEntity.getUser() != userAuthTokenEntity.getUser() ) {
-            throw new AuthorizationFailedException("ATHR-003","Only the question owner can edit the question");
+        if (questionEntity.getUser() != userAuthTokenEntity.getUser()) {
+            throw new AuthorizationFailedException("ATHR-003", "Only the question owner can edit the question");
         }
 
         questionEntity.setContent(questionRequest.getContent());
 
         QuestionEntity updateQuestionEntity = questionService.updateQuestion(questionEntity);
 
-        if( updateQuestionEntity == null ){
-            throw new AuthorizationFailedException("OTHER-001","Database Error");
+        if (updateQuestionEntity == null) {
+            throw new AuthorizationFailedException("OTHER-001", "Database Error");
         }
 
         QuestionResponse questionResponse = new QuestionResponse().id(questionEntity.getUuid()).status("QUESTION EDITED");
@@ -185,23 +184,23 @@ public class QuestionController {
             @RequestHeader("authorization") final String authorization)
             throws AuthorizationFailedException, InvalidQuestionException, UnsupportedEncodingException {
 
-        // Call authenticationService with access_token field
-        UserAuthTokenEntity userAuthTokenEntity = bearerSplit(authorization);
+        // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
+        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
 
         // Token exist or token expired
-        if ( userAuthTokenEntity.getLogoutAt() != null ) {
-            throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to delete a question");
+        if (userAuthTokenEntity.getLogoutAt() != null) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to delete a question");
         }
 
         final QuestionEntity questionEntity = questionService.getQuestionByUuid(questionUuid);
 
         // given uuid doesn't exist
-        if(questionEntity == null ) {
-            throw new InvalidQuestionException("QUES-001","Entered question uuid does not exist");
+        if (questionEntity == null) {
+            throw new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
         }
 
-        if( questionEntity.getUser() != userAuthTokenEntity.getUser() && questionEntity.getUser().getRole().equals("nonadmin") ) {
-            throw new AuthorizationFailedException("ATHR-003","Only the question owner or admin can delete the question");
+        if (questionEntity.getUser() != userAuthTokenEntity.getUser() && questionEntity.getUser().getRole().equals("nonadmin")) {
+            throw new AuthorizationFailedException("ATHR-003", "Only the question owner or admin can delete the question");
         }
 
         questionService.deleteQuestion(questionEntity);
@@ -227,25 +226,27 @@ public class QuestionController {
             @RequestHeader("authorization") final String authorization)
             throws AuthorizationFailedException, UserNotFoundException, UnsupportedEncodingException {
 
-        // Call authenticationService with access token came in authorization field.
-        UserAuthTokenEntity userAuthTokenEntity = bearerSplit(authorization);
+
+        // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
+        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
+
         // Token exist but user logged out already or token expired
-        if ( userAuthTokenEntity.getLogoutAt() != null ) {
-            throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions");
+        if (userAuthTokenEntity.getLogoutAt() != null) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get all questions");
         }
 
         UserEntity userEntity = authenticationService.getUserByUuid(userUuid);
 
         // if user doesnot exist
-        if ( userEntity == null ) {
-            throw new UserNotFoundException("USR-001","User with entered uuid whose question details are to be seen does not exist");
+        if (userEntity == null) {
+            throw new UserNotFoundException("USR-001", "User with entered uuid whose question details are to be seen does not exist");
         }
 
         final List<QuestionEntity> questionEntityList = questionService.getAllQuestionsByUser(userEntity);
 
         List<QuestionDetailsResponse> questionDetailsResponseList = new ArrayList<>();
 
-        for(QuestionEntity questionEntity: questionEntityList) {
+        for (QuestionEntity questionEntity : questionEntityList) {
 
             QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse().id(questionEntity.getUuid()).content(questionEntity.getContent());
             questionDetailsResponseList.add(questionDetailsResponse);
@@ -254,12 +255,12 @@ public class QuestionController {
         return new ResponseEntity<>(questionDetailsResponseList, HttpStatus.OK);
     }
 
-    private UserAuthTokenEntity bearerSplit(String authorization) throws AuthorizationFailedException {
+    private UserAuthTokenEntity getUserAuthTokenEntity(String authorization) throws AuthorizationFailedException {
         String[] bearerToken = authorization.split("Bearer ");
         if (bearerToken.length < 2) {
             throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
         }
 
-        return   authenticationService.authenticateByAccessToken(bearerToken[1]);
+        return authenticationService.authenticateByAccessToken(bearerToken[1]);
     }
 }
