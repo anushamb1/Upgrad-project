@@ -62,4 +62,12 @@ public class UserDao implements Serializable {
         }
     }
 
+    public UserEntity deleteUser(final String userId) {
+        UserEntity deleteUser = getUser(userId);
+        if (deleteUser != null) {
+            this.entityManager.remove(deleteUser);
+        }
+        return deleteUser;
+    }
+
 }
