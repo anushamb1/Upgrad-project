@@ -28,16 +28,21 @@ public class RestExceptionHandler {
         );
     }
 
-
     @ExceptionHandler(AuthorizationFailedException.class)
     public ResponseEntity<ErrorResponse> authorizationFailedException(AuthorizationFailedException exe, WebRequest request) {
         if (exe.getCode().compareTo("SGR-001") == 0) {
             return new ResponseEntity<ErrorResponse>(
                     new ErrorResponse().code(exe.getCode()).message(exe.getErrorMessage()), HttpStatus.UNAUTHORIZED
             );
-        } else {
+        }
+        else if (exe.getCode().compareTo("ATHR-001" ) == 0 || exe.getCode().compareTo("ATHR-003" ) == 0 ) {
             return new ResponseEntity<ErrorResponse>(
                     new ErrorResponse().code(exe.getCode()).message(exe.getErrorMessage()), HttpStatus.FORBIDDEN
+            );
+        }
+        else {
+            return new ResponseEntity<ErrorResponse>(
+                    new ErrorResponse().code(exe.getCode()).message(exe.getErrorMessage()), HttpStatus.NOT_FOUND
             );
         }}
 
