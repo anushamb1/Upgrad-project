@@ -52,7 +52,8 @@ public class QuestionController {
             throws AuthorizationFailedException, UnsupportedEncodingException {
 
         // Call authenticationService with access_token field
-        UserAuthTokenEntity userAuthTokenEntity = authenticationService.authenticateByAccessToken(authorization);
+
+        UserAuthTokenEntity userAuthTokenEntity = bearerSplit(authorization);
 
         // Token exist or token expired
         if ( userAuthTokenEntity.getLogoutAt() != null ) {
@@ -96,7 +97,7 @@ public class QuestionController {
             throws AuthorizationFailedException, UnsupportedEncodingException {
 
         // Call authenticationService with access_token field.
-        UserAuthTokenEntity userAuthTokenEntity = authenticationService.authenticateByAccessToken(authorization);
+        UserAuthTokenEntity userAuthTokenEntity = bearerSplit(authorization);
 
         // Token exist or token expired
         if ( userAuthTokenEntity.getLogoutAt() != null ) {
@@ -136,7 +137,7 @@ public class QuestionController {
             throws AuthorizationFailedException, InvalidQuestionException, UnsupportedEncodingException {
 
         // Call authenticationService with access_token field
-        UserAuthTokenEntity userAuthTokenEntity = authenticationService.authenticateByAccessToken(authorization);
+        UserAuthTokenEntity userAuthTokenEntity = bearerSplit(authorization);
 
         // Token exist or token expired
         if ( userAuthTokenEntity.getLogoutAt() != null ) {
@@ -185,7 +186,7 @@ public class QuestionController {
             throws AuthorizationFailedException, InvalidQuestionException, UnsupportedEncodingException {
 
         // Call authenticationService with access_token field
-        UserAuthTokenEntity userAuthTokenEntity = authenticationService.authenticateByAccessToken(authorization);
+        UserAuthTokenEntity userAuthTokenEntity = bearerSplit(authorization);
 
         // Token exist or token expired
         if ( userAuthTokenEntity.getLogoutAt() != null ) {
@@ -227,8 +228,7 @@ public class QuestionController {
             throws AuthorizationFailedException, UserNotFoundException, UnsupportedEncodingException {
 
         // Call authenticationService with access token came in authorization field.
-        UserAuthTokenEntity userAuthTokenEntity = authenticationService.authenticateByAccessToken(authorization);
-
+        UserAuthTokenEntity userAuthTokenEntity = bearerSplit(authorization);
         // Token exist but user logged out already or token expired
         if ( userAuthTokenEntity.getLogoutAt() != null ) {
             throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions");
@@ -252,5 +252,14 @@ public class QuestionController {
 
         }
         return new ResponseEntity<>(questionDetailsResponseList, HttpStatus.OK);
+    }
+
+    private UserAuthTokenEntity bearerSplit(String authorization) throws AuthorizationFailedException {
+        String[] bearerToken = authorization.split("Bearer ");
+        if (bearerToken.length < 2) {
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+        }
+
+        return   authenticationService.authenticateByAccessToken(bearerToken[1]);
     }
 }
