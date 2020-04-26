@@ -90,7 +90,7 @@ public class PasswordCryptographyProvider {
         return Base64.getEncoder().encodeToString(bytes);
     }
 
-    private static byte[] getBase64DecodedStringAsBytes(String decode) {
+    public static byte[] getBase64DecodedStringAsBytes(String decode) {
         return Base64.getDecoder().decode(decode);
     }
 }
