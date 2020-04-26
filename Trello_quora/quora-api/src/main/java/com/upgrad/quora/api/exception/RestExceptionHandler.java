@@ -1,10 +1,7 @@
 package com.upgrad.quora.api.exception;
 
 import com.upgrad.quora.api.model.ErrorResponse;
-import com.upgrad.quora.service.exception.AuthenticationFailedException;
-import com.upgrad.quora.service.exception.AuthorizationFailedException;
-import com.upgrad.quora.service.exception.SignUpRestrictedException;
-import com.upgrad.quora.service.exception.UserNotFoundException;
+import com.upgrad.quora.service.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -35,7 +32,7 @@ public class RestExceptionHandler {
                     new ErrorResponse().code(exe.getCode()).message(exe.getErrorMessage()), HttpStatus.UNAUTHORIZED
             );
         }
-        else if (exe.getCode().compareTo("ATHR-001" ) == 0 || exe.getCode().compareTo("ATHR-003" ) == 0 ) {
+        else if (exe.getCode().compareTo("ATHR-001" ) == 0 || exe.getCode().compareTo("ATHR-003" ) == 0 || exe.getCode().compareTo("ATHR-002" ) == 0 ) {
             return new ResponseEntity<ErrorResponse>(
                     new ErrorResponse().code(exe.getCode()).message(exe.getErrorMessage()), HttpStatus.FORBIDDEN
             );
@@ -52,6 +49,14 @@ public class RestExceptionHandler {
             return new ResponseEntity<ErrorResponse>(
                     new ErrorResponse().code(unf.getCode()).message(unf.getErrorMessage()), HttpStatus.NOT_FOUND);
         }
+
+    @ExceptionHandler(InvalidQuestionException.class)
+    public ResponseEntity<ErrorResponse> invalidQuestionException(
+            InvalidQuestionException exception, WebRequest request) {
+        return new ResponseEntity<ErrorResponse>(
+                new ErrorResponse().code(exception.getCode()).message(exception.getErrorMessage()),
+                HttpStatus.NOT_FOUND);
+    }
     }
 
 
