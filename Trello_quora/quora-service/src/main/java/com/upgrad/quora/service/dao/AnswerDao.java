@@ -1,12 +1,12 @@
 package com.upgrad.quora.service.dao;
 
 import com.upgrad.quora.service.entity.AnswerEntity;
-import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import java.util.List;
 
 @Repository
 public class AnswerDao {
@@ -16,7 +16,7 @@ public class AnswerDao {
     private EntityManager entityManager;
 
     public AnswerEntity createAnswer(AnswerEntity answerEntity) {
-        System.out.println("UserDao..." + answerEntity);
+
         entityManager.persist(answerEntity);
         try {
             return answerEntity;

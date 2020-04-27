@@ -3,6 +3,7 @@ package com.upgrad.quora.api.controller;
 import com.upgrad.quora.api.model.AnswerRequest;
 import com.upgrad.quora.api.model.AnswerResponse;
 import com.upgrad.quora.service.business.AnswerService;
+import com.upgrad.quora.service.business.AuthTokenService;
 import com.upgrad.quora.service.business.AuthenticationService;
 import com.upgrad.quora.service.business.QuestionService;
 import com.upgrad.quora.service.entity.AnswerEntity;
@@ -30,10 +31,10 @@ public class AnswerController {
     private AnswerService answerService;
 
     @Autowired
-    private AuthenticationService authenticationService;
+    private QuestionService questionService;
 
     @Autowired
-    private QuestionService questionService;
+    private AuthTokenService authTokenService;
 
     /*
      * This endpoint is used to create a new answer in the Quora Application.
@@ -63,7 +64,7 @@ public class AnswerController {
         }
 
         // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
-        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
+        UserAuthTokenEntity userAuthTokenEntity = authTokenService.getUserAuthTokenEntity(authorization);
 
         // Token exist but user logged out already or token expired
         if (userAuthTokenEntity.getLogoutAt() != null) {
@@ -102,7 +103,7 @@ public class AnswerController {
             throws AuthorizationFailedException, AnswerNotFoundException {
 
         // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
-        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
+        UserAuthTokenEntity userAuthTokenEntity = authTokenService.getUserAuthTokenEntity(authorization);
 
         // Token exist but user logged out already or token expired
         if (userAuthTokenEntity.getLogoutAt() != null) {
@@ -146,7 +147,7 @@ public class AnswerController {
             throws AuthorizationFailedException, AnswerNotFoundException {
 
         // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
-        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
+        UserAuthTokenEntity userAuthTokenEntity = authTokenService.getUserAuthTokenEntity(authorization);
 
         // Token exist but user logged out already or token expired
         if (userAuthTokenEntity.getLogoutAt() != null) {
@@ -187,7 +188,7 @@ public class AnswerController {
             throws AuthorizationFailedException, InvalidQuestionException {
 
         // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
-        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
+        UserAuthTokenEntity userAuthTokenEntity = authTokenService.getUserAuthTokenEntity(authorization);
 
         // Token exist but user logged out already or token expired
         if (userAuthTokenEntity.getLogoutAt() != null) {
@@ -205,13 +206,4 @@ public class AnswerController {
         return ResponseEntity.status(HttpStatus.OK).body(answerEntityList);
     }
 
-
-    private UserAuthTokenEntity getUserAuthTokenEntity(String authorization) throws AuthorizationFailedException {
-        String[] bearerToken = authorization.split("Bearer ");
-        if (bearerToken.length < 2) {
-            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
-        }
-
-        return authenticationService.authenticateByAccessToken(bearerToken[1]);
-    }
 }
