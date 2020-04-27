@@ -3,6 +3,7 @@ package com.upgrad.quora.api.controller;
 import com.upgrad.quora.api.model.QuestionDetailsResponse;
 import com.upgrad.quora.api.model.QuestionRequest;
 import com.upgrad.quora.api.model.QuestionResponse;
+import com.upgrad.quora.service.business.AuthTokenService;
 import com.upgrad.quora.service.business.AuthenticationService;
 import com.upgrad.quora.service.business.QuestionService;
 import com.upgrad.quora.service.entity.QuestionEntity;
@@ -33,6 +34,9 @@ public class QuestionController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    @Autowired
+    private AuthTokenService authTokenService;
+
     /*
      * This endpoint is used to create a new question in the Quora Application.
      * input - questionRequest contain question content and
@@ -52,7 +56,7 @@ public class QuestionController {
             throws AuthorizationFailedException, UnsupportedEncodingException {
 
         // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
-        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
+        UserAuthTokenEntity userAuthTokenEntity = authTokenService.getUserAuthTokenEntity(authorization);
 
         // Token exist or token expired
         if (userAuthTokenEntity.getLogoutAt() != null) {
@@ -96,7 +100,7 @@ public class QuestionController {
             throws AuthorizationFailedException, UnsupportedEncodingException {
 
         // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
-        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
+        UserAuthTokenEntity userAuthTokenEntity = authTokenService.getUserAuthTokenEntity(authorization);
 
         // Token exist or token expired
         if (userAuthTokenEntity.getLogoutAt() != null) {
@@ -136,7 +140,7 @@ public class QuestionController {
             throws AuthorizationFailedException, InvalidQuestionException, UnsupportedEncodingException {
 
         // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
-        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
+        UserAuthTokenEntity userAuthTokenEntity = authTokenService.getUserAuthTokenEntity(authorization);
 
         // Token exist or token expired
         if (userAuthTokenEntity.getLogoutAt() != null) {
@@ -185,7 +189,7 @@ public class QuestionController {
             throws AuthorizationFailedException, InvalidQuestionException, UnsupportedEncodingException {
 
         // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
-        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
+        UserAuthTokenEntity userAuthTokenEntity = authTokenService.getUserAuthTokenEntity(authorization);
 
         // Token exist or token expired
         if (userAuthTokenEntity.getLogoutAt() != null) {
@@ -228,7 +232,7 @@ public class QuestionController {
 
 
         // get UserAuthToken Entity it authorization was valid else it will throw AuthorizationFailedException
-        UserAuthTokenEntity userAuthTokenEntity = getUserAuthTokenEntity(authorization);
+        UserAuthTokenEntity userAuthTokenEntity = authTokenService.getUserAuthTokenEntity(authorization);
 
         // Token exist but user logged out already or token expired
         if (userAuthTokenEntity.getLogoutAt() != null) {
@@ -255,12 +259,5 @@ public class QuestionController {
         return new ResponseEntity<>(questionDetailsResponseList, HttpStatus.OK);
     }
 
-    private UserAuthTokenEntity getUserAuthTokenEntity(String authorization) throws AuthorizationFailedException {
-        String[] bearerToken = authorization.split("Bearer ");
-        if (bearerToken.length < 2) {
-            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
-        }
 
-        return authenticationService.authenticateByAccessToken(bearerToken[1]);
-    }
 }
